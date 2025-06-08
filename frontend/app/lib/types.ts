@@ -1,24 +1,18 @@
 // Provider types - matching Django model choices exactly
-export type ProviderType = "aws" | "oracle" | "azure" | "gcp";
 export type ProviderStatus = "in_progress" | "up" | "down";
 
 export interface Provider {
   id: number;
   slug: string;
-  name: string;
-  provider_type: ProviderType;
   status: ProviderStatus;
   created_at: string;
   updated_at: string;
 }
 
-// Deploy types - matching Django model choices exactly
-export type DeployStatus = "pending" | "in_progress" | "completed" | "failed";
-
+// Deploy types - simplified structure
 export interface Deploy {
   id: number;
   github_repo_url: string;
-  status: DeployStatus;
   providers: Provider[];
   created_at: string;
   updated_at: string;
@@ -45,15 +39,6 @@ export interface Log {
 export interface LogFilters {
   provider?: string;
   level?: LogLevel;
-}
-
-// DeployProvider intermediate model (through table)
-export interface DeployProvider {
-  deploy: number;
-  provider: number;
-  status: ProviderStatus; // Uses same choices as Provider.STATUS_CHOICES
-  created_at: string;
-  updated_at: string;
 }
 
 // API Response types

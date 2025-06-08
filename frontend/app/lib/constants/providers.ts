@@ -4,8 +4,6 @@ export const AVAILABLE_PROVIDERS: Provider[] = [
   {
     id: 1,
     slug: 'aws',
-    name: 'Amazon Web Services',
-    provider_type: 'aws',
     status: 'up',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -13,13 +11,17 @@ export const AVAILABLE_PROVIDERS: Provider[] = [
   {
     id: 2,
     slug: 'oracle',
-    name: 'Oracle Cloud',
-    provider_type: 'oracle',
     status: 'up',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
 ]
+
+// Helper para obter nomes amigáveis dos providers
+export const PROVIDER_NAMES: Record<string, string> = {
+  aws: 'Amazon Web Services',
+  oracle: 'Oracle Cloud',
+}
 
 export const getProviderBySlug = (slug: string): Provider | undefined => {
   return AVAILABLE_PROVIDERS.find(provider => provider.slug === slug)

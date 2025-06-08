@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Label } from '~/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select'
 import { useDeploymentPolling, useLatestLogs } from '~/hooks'
-import { AVAILABLE_PROVIDERS } from '~/lib/constants/providers'
+import { AVAILABLE_PROVIDERS, PROVIDER_NAMES } from '~/lib/constants/providers'
 import type { LogLevel } from '~/lib/types'
 import type { Route } from './+types/deploy-detail'
 
@@ -18,18 +18,16 @@ export function meta({ params }: Route.MetaArgs) {
   ]
 }
 
-const statusColors = {
-  pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+const providerStatusColors = {
   in_progress: 'bg-blue-100 text-blue-800 border-blue-200',
-  completed: 'bg-green-100 text-green-800 border-green-200',
-  failed: 'bg-red-100 text-red-800 border-red-200',
+  up: 'bg-green-100 text-green-800 border-green-200',
+  down: 'bg-red-100 text-red-800 border-red-200',
 } as const
 
-const statusLabels = {
-  pending: 'Pendente',
+const providerStatusLabels = {
   in_progress: 'Em Progresso',
-  completed: 'Concluído',
-  failed: 'Falhou',
+  up: 'Funcionando',
+  down: 'Fora do Ar',
 } as const
 
 const logLevelColors = {
@@ -131,8 +129,8 @@ export default function DeployDetail({ params }: Route.ComponentProps) {
               </p>
             </div>
           </div>
-          <Badge variant="secondary" className={statusColors[deployment.status]}>
-            {statusLabels[deployment.status]}
+          <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
+            {deployment.completed_at ? 'Concluído' : 'Em Andamento'}
           </Badge>
         </div>
 
@@ -147,7 +145,7 @@ export default function DeployDetail({ params }: Route.ComponentProps) {
                 Status
               </Label>
               <p className="text-lg font-semibold">
-                {statusLabels[deployment.status]}
+                {deployment.completed_at ? 'Concluído' : 'Em Andamento'}
               </p>
             </div>
             <div>
@@ -179,7 +177,7 @@ export default function DeployDetail({ params }: Route.ComponentProps) {
                   key={provider.id}
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
-                  <span className="font-medium">{provider.name}</span>
+                  <span className="font-medium">{PROVIDER_NAMES[provider.slug]}</span>
                   <Badge variant="outline" className="text-xs">
                     {provider.status}
                   </Badge>
@@ -222,7 +220,7 @@ export default function DeployDetail({ params }: Route.ComponentProps) {
                     <SelectItem value="all-providers">Todos os providers</SelectItem>
                     {AVAILABLE_PROVIDERS.map((provider) => (
                       <SelectItem key={provider.id} value={provider.slug}>
-                        {provider.name}
+                        {PROVIDER_NAMES[provider.slug]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -274,7 +272,7 @@ export default function DeployDetail({ params }: Route.ComponentProps) {
                       {formatDate(log.timestamp)}
                     </span>
                     <Badge variant="outline" className="text-xs">
-                      {log.provider.name}
+                      {PROVIDER_NAMES[log.provider.slug]}
                     </Badge>
                     <span className={`font-medium ${logLevelColors[log.level]}`}>
                       [{log.level.toUpperCase()}]

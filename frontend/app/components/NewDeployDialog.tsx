@@ -14,7 +14,7 @@ import {
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { useCreateDeployment } from '~/hooks'
-import { AVAILABLE_PROVIDERS } from '~/lib/constants/providers'
+import { AVAILABLE_PROVIDERS, PROVIDER_NAMES } from '~/lib/constants/providers'
 import type { Provider } from '~/lib/types'
 
 interface NewDeployDialogProps {
@@ -151,7 +151,7 @@ export function NewDeployDialog({ children }: NewDeployDialogProps) {
                       htmlFor={`provider-${provider.id}`}
                       className="flex-1 cursor-pointer"
                     >
-                      {provider.name}
+                      {PROVIDER_NAMES[provider.slug]}
                     </Label>
                     <Badge
                       variant="secondary"
