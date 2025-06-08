@@ -13,7 +13,8 @@ import {
 } from '~/components/ui/dialog'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
-import { useCreateDeployment, useProviders } from '~/hooks'
+import { useCreateDeployment } from '~/hooks'
+import { AVAILABLE_PROVIDERS } from '~/lib/constants/providers'
 import type { Provider } from '~/lib/types'
 
 interface NewDeployDialogProps {
@@ -26,7 +27,6 @@ export function NewDeployDialog({ children }: NewDeployDialogProps) {
   const [selectedProviders, setSelectedProviders] = useState<string[]>([])
   const [urlError, setUrlError] = useState('')
 
-  const { data: providers, isLoading: loadingProviders } = useProviders()
   const createMutation = useCreateDeployment()
 
   const validateGithubUrl = (url: string) => {
@@ -132,48 +132,42 @@ export function NewDeployDialog({ children }: NewDeployDialogProps) {
 
           <div className="space-y-3">
             <Label>Providers de Deploy</Label>
-            {loadingProviders ? (
-              <p className="text-sm text-muted-foreground">
-                Carregando providers...
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {providers?.map((provider) => (
-                  <div
-                    key={provider.id}
-                    className="flex items-center space-x-3 p-3 border rounded-lg"
-                  >
-                    <Checkbox
-                      id={`provider-${provider.id}`}
-                      checked={selectedProviders.includes(provider.slug)}
-                      onCheckedChange={(checked) =>
-                        handleProviderChange(provider.slug, checked as boolean)
-                      }
-                      disabled={provider.status === 'down'}
-                    />
-                    <div className="flex-1 flex items-center justify-between">
-                      <Label
-                        htmlFor={`provider-${provider.id}`}
-                        className="flex-1 cursor-pointer"
-                      >
-                        {provider.name}
-                      </Label>
-                      <Badge
-                        variant="secondary"
-                        className={getProviderStatusColor(provider)}
-                      >
-                        {provider.status}
-                      </Badge>
-                    </div>
+            <div className="space-y-2">
+              {AVAILABLE_PROVIDERS.map((provider) => (
+                <div
+                  key={provider.id}
+                  className="flex items-center space-x-3 p-3 border rounded-lg"
+                >
+                  <Checkbox
+                    id={`provider-${provider.id}`}
+                    checked={selectedProviders.includes(provider.slug)}
+                    onCheckedChange={(checked) =>
+                      handleProviderChange(provider.slug, checked as boolean)
+                    }
+                    disabled={provider.status === 'down'}
+                  />
+                  <div className="flex-1 flex items-center justify-between">
+                    <Label
+                      htmlFor={`provider-${provider.id}`}
+                      className="flex-1 cursor-pointer"
+                    >
+                      {provider.name}
+                    </Label>
+                    <Badge
+                      variant="secondary"
+                      className={getProviderStatusColor(provider)}
+                    >
+                      {provider.status}
+                    </Badge>
                   </div>
-                ))}
-                {selectedProviders.length === 0 && (
-                  <p className="text-sm text-red-600">
-                    Selecione pelo menos um provider
-                  </p>
-                )}
-              </div>
-            )}
+                </div>
+              ))}
+              {selectedProviders.length === 0 && (
+                <p className="text-sm text-red-600">
+                  Selecione pelo menos um provider
+                </p>
+              )}
+            </div>
           </div>
 
           <DialogFooter>
@@ -189,8 +183,7 @@ export function NewDeployDialog({ children }: NewDeployDialogProps) {
               disabled={
                 !githubUrl ||
                 selectedProviders.length === 0 ||
-                createMutation.isPending ||
-                loadingProviders
+                createMutation.isPending
               }
             >
               {createMutation.isPending ? 'Criando...' : 'Criar Deployment'}
