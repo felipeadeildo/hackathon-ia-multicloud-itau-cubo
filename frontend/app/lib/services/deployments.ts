@@ -26,4 +26,5 @@ export const deploymentService = {
   delete: (id: number): Promise<void> => {
     return apiClient.delete<void>(`/deployments/${id}/`)
   },
+
 }

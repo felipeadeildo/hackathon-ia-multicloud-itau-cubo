@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   AlertCircle,
   AlertTriangle,
@@ -12,13 +13,14 @@ import {
   Terminal,
   XCircle,
   Zap,
+  Sparkles,
 } from 'lucide-react'
 import { Link } from 'react-router'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Label } from '~/components/ui/label'
-import { useDeploymentPolling, useLogsPolling } from '~/hooks'
+import { useDeploymentPolling, useLogsPolling, useAIRecommendation } from '~/hooks'
 import { PROVIDER_NAMES } from '~/lib/constants/providers'
 import type { LogLevel, Provider } from '~/lib/types'
 import {
@@ -174,6 +176,45 @@ function ProviderLogs({ provider, deployId }: ProviderLogsProps) {
             })
           )}
         </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function AIRecommendation({ deployId }: { deployId: number }) {
+  const { recommendation, loading, error, getRecommendation } = useAIRecommendation()
+
+  // Recomendação Provider IA
+  React.useEffect(() => {
+    getRecommendation(deployId)
+  }, [deployId])
+
+  return (
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Sparkles className="w-5 h-5" />
+            Recomendação Provider IA
+          </CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex items-center justify-center py-8 text-muted-foreground">
+            <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+            Analisando deployment...
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <AlertCircle className="w-8 h-8 mx-auto mb-2 text-red-500" />
+            <p>Erro ao obter recomendação</p>
+          </div>
+        ) : (
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-blue-800">{recommendation}</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
@@ -355,6 +396,9 @@ export default function DeployDetail({ params }: Route.ComponentProps) {
           </CardContent>
         </Card>
 
+        {/* AI Recommendation */}
+        <AIRecommendation deployId={deployId} />
+
         {/* Logs Grid - Each provider gets its own section */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
@@ -365,14 +409,16 @@ export default function DeployDetail({ params }: Route.ComponentProps) {
             </Badge>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {deployment.providers.map((provider) => (
-              <ProviderLogs
-                key={provider.id}
-                provider={provider}
-                deployId={deployId}
-              />
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
+              {deployment.providers.map((provider) => (
+                <ProviderLogs
+                  key={provider.slug}
+                  provider={provider}
+                  deployId={deployId}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>

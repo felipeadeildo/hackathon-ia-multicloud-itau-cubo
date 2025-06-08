@@ -14,7 +14,7 @@ from .serializers import (
 
 agent = Agent(
     model="openai:gpt-4o-mini",
-    instructions="Você é um agente de deploy que sabe bastante coisa sobre eficiência de deploys, e bla bla bla",
+    instructions="Você é um agente de deploy que sabe bastante coisa sobre eficiência de deploys",
 )
 
 
