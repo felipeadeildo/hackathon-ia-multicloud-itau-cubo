@@ -38,15 +38,11 @@ def cleanup_deployment_task(deploy_id):
         deploy = Deploy.objects.get(pk=deploy_id)
 
         # Verifica se todos os providers terminaram
-        deploy_providers = deploy.providers.all()
-        all_completed = all(
-            dp.status in ["completed", "failed"] for dp in deploy_providers
-        )
+        providers = deploy.providers.all()  # type: ignore
+        all_completed = all(provider.status in ["up", "down"] for provider in providers)
 
         if all_completed:
-            # Atualiza status final do deploy baseado nos resultados
-            has_failures = any(dp.status == "failed" for dp in deploy_providers)
-            deploy.status = "failed" if has_failures else "completed"
+            # Atualiza timestamp de conclusão
             deploy.completed_at = timezone.now()
             deploy.save()
 

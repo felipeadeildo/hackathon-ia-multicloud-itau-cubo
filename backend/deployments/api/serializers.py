@@ -8,8 +8,6 @@ class ProviderSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "slug",
-            "name",
-            "provider_type",
             "status",
             "created_at",
             "updated_at",
@@ -24,7 +22,6 @@ class DeploySerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "github_repo_url",
-            "status",
             "providers",
             "created_at",
             "updated_at",

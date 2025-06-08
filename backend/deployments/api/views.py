@@ -24,9 +24,6 @@ class DeployListCreateView(APIView):
             github_repo_url = serializer.validated_data["github_repo_url"]  # type: ignore
             provider_slugs = serializer.validated_data["providers"]  # type: ignore
             deploy = Deploy.objects.create(github_repo_url=github_repo_url)
-            providers = Provider.objects.filter(slug__in=provider_slugs)
-            deploy.providers.set(providers)
-            deploy.save()
 
             # Dispara tasks assíncronas para cada provider
             from deployments.tasks import deploy_to_provider_task
@@ -63,6 +60,11 @@ class LogListView(APIView):
 
 class ProviderListView(APIView):
     def get(self, request):
-        providers = Provider.objects.all()
+        # Agora providers são específicos por deploy
+        deploy_id = request.GET.get("deploy_id")
+        if deploy_id:
+            providers = Provider.objects.filter(deploy_id=deploy_id)
+        else:
+            providers = Provider.objects.all()
         serializer = ProviderSerializer(providers, many=True)
         return Response(serializer.data)
