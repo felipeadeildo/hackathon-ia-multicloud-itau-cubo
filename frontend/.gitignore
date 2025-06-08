@@ -9,4 +9,6 @@
 
 .env
 
-dist/
+dist/#Paths added by Azion CLI
+.edge/
+.vulcan

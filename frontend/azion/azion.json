@@ -1,0 +1,58 @@
+{
+  "name": "hackathon-ia-multicloud-itau-cubo",
+  "bucket": "hackathon-ia-multicloud-itau-cubo",
+  "preset": "react",
+  "env": "production",
+  "prefix": "20250608155742",
+  "not-first-run": true,
+  "function": {
+    "id": 46343,
+    "name": "__DEFAULT__",
+    "file": ".edge/worker.js",
+    "args": "azion/args.json",
+    "instance-id": 42804,
+    "instance-name": "__DEFAULT__",
+    "cache-id": 0
+  },
+  "application": {
+    "id": 1749395172,
+    "name": "__DEFAULT__"
+  },
+  "domain": {
+    "id": 1749395452,
+    "name": "hackathon-ia-multicloud-itau-cubo",
+    "domain_name": "lhzwpigf7d.map.azionedge.net",
+    "url": "https://lhzwpigf7d.map.azionedge.net"
+  },
+  "rt-purge": {
+    "purge_on_publish": true
+  },
+  "origin": [
+    {
+      "origin-id": 221132,
+      "origin-key": "e46fd327-8c18-4974-a450-2fbaf5579430",
+      "name": "origin-storage-default"
+    }
+  ],
+  "rules-engine": {
+    "created": false,
+    "rules": [
+      {
+        "id": 423168,
+        "name": "Set Storage Origin for All Requests",
+        "phase": "request"
+      },
+      {
+        "id": 423169,
+        "name": "Deliver Static Assets",
+        "phase": "request"
+      },
+      {
+        "id": 423170,
+        "name": "Redirect to index.html",
+        "phase": "request"
+      }
+    ]
+  },
+  "cache-settings": []
+}
