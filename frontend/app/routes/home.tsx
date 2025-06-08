@@ -1,4 +1,4 @@
-import { Plus, RefreshCw } from 'lucide-react'
+import { Activity, Github, Plus, RefreshCw } from 'lucide-react'
 import { DeploymentCard } from '~/components/DeploymentCard'
 import { DeploymentStats } from '~/components/DeploymentStats'
 import { NewDeployDialog } from '~/components/NewDeployDialog'
@@ -21,6 +21,7 @@ export default function Home() {
       <div className="min-h-screen bg-background p-6">
         <div className="mx-auto max-w-7xl">
           <div className="text-center py-12">
+            <Activity className="w-16 h-16 mx-auto mb-4 text-red-500" />
             <h2 className="text-2xl font-bold text-red-600 mb-2">
               Erro ao carregar deployments
             </h2>
@@ -42,13 +43,18 @@ export default function Home() {
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              MultiCloud Dashboard
-            </h1>
-            <p className="text-muted-foreground">
-              Gerencie seus deployments em múltiplos provedores de nuvem
-            </p>
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Activity className="w-8 h-8 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">
+                MultiCloud Dashboard
+              </h1>
+              <p className="text-muted-foreground">
+                Gerencie seus deployments em múltiplos provedores de nuvem
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <Button
@@ -61,7 +67,7 @@ export default function Home() {
               Atualizar
             </Button>
             <NewDeployDialog>
-              <Button>
+              <Button className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="w-4 h-4 mr-2" />
                 Novo Deploy
               </Button>
@@ -77,10 +83,12 @@ export default function Home() {
         {/* Deployments Grid */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Github className="w-5 h-5" />
               Deployments Recentes
               {isLoading && (
-                <span className="ml-2 text-sm text-muted-foreground">
+                <span className="ml-2 text-sm text-muted-foreground flex items-center gap-1">
+                  <RefreshCw className="w-3 h-3 animate-spin" />
                   Atualizando...
                 </span>
               )}
@@ -91,8 +99,9 @@ export default function Home() {
           </div>
 
           {deployments.length === 0 ? (
-            <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg">
+            <div className="text-center py-12 border-2 border-dashed border-muted rounded-lg bg-gradient-to-br from-slate-50 to-slate-100">
               <div className="mx-auto max-w-sm">
+                <Github className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
                 <h3 className="text-lg font-medium text-muted-foreground mb-2">
                   Nenhum deployment encontrado
                 </h3>
@@ -100,7 +109,7 @@ export default function Home() {
                   Comece criando seu primeiro deployment para um repositório GitHub.
                 </p>
                 <NewDeployDialog>
-                  <Button>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
                     <Plus className="w-4 h-4 mr-2" />
                     Criar Primeiro Deploy
                   </Button>

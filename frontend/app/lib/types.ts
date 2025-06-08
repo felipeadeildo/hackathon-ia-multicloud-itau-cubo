@@ -9,7 +9,7 @@ export interface Provider {
   updated_at: string;
 }
 
-// Deploy types - simplified structure
+// Deploy types - matching API exactly
 export interface Deploy {
   id: number;
   github_repo_url: string;
@@ -18,6 +18,9 @@ export interface Deploy {
   updated_at: string;
   completed_at: string | null;
 }
+
+// Helper type for computed deploy status
+export type DeployStatus = "pending" | "in_progress" | "completed" | "failed";
 
 export interface DeployCreateRequest {
   github_repo_url: string;

@@ -1,3 +1,4 @@
+import { AlertCircle, CheckCircle, Github, Loader2, XCircle } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -15,11 +16,28 @@ import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { useCreateDeployment } from '~/hooks'
 import { AVAILABLE_PROVIDERS, PROVIDER_NAMES } from '~/lib/constants/providers'
-import type { Provider } from '~/lib/types'
 
 interface NewDeployDialogProps {
   children: React.ReactNode
 }
+
+const providerStatusConfig = {
+  up: {
+    color: 'bg-green-50 text-green-700 border-green-200',
+    icon: CheckCircle,
+    label: 'Disponível',
+  },
+  down: {
+    color: 'bg-red-50 text-red-700 border-red-200',
+    icon: XCircle,
+    label: 'Indisponível',
+  },
+  in_progress: {
+    color: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    icon: AlertCircle,
+    label: 'Processando',
+  },
+} as const
 
 export function NewDeployDialog({ children }: NewDeployDialogProps) {
   const [open, setOpen] = useState(false)
@@ -89,33 +107,29 @@ export function NewDeployDialog({ children }: NewDeployDialogProps) {
     }
   }
 
-  const getProviderStatusColor = (provider: Provider) => {
-    switch (provider.status) {
-      case 'up':
-        return 'bg-green-100 text-green-800 border-green-200'
-      case 'down':
-        return 'bg-red-100 text-red-800 border-red-200'
-      case 'in_progress':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
-    }
-  }
+  const availableProviders = AVAILABLE_PROVIDERS.filter(p => p.status !== 'down')
+  const unavailableProviders = AVAILABLE_PROVIDERS.filter(p => p.status === 'down')
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Novo Deployment</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Github className="w-5 h-5" />
+            Novo Deployment
+          </DialogTitle>
           <DialogDescription>
-            Selecione um repositório GitHub e os providers para deployment.
+            Selecione um repositório GitHub e os providers para deployment em múltiplas nuvens.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="github-url">URL do Repositório GitHub</Label>
+            <Label htmlFor="github-url" className="flex items-center gap-2">
+              <Github className="w-4 h-4" />
+              URL do Repositório GitHub
+            </Label>
             <Input
               id="github-url"
               type="url"
@@ -125,49 +139,109 @@ export function NewDeployDialog({ children }: NewDeployDialogProps) {
                 setGithubUrl(e.target.value)
                 if (urlError) setUrlError('')
               }}
-              className={urlError ? 'border-red-500' : ''}
+              className={urlError ? 'border-red-500 focus-visible:ring-red-500' : ''}
             />
-            {urlError && <p className="text-sm text-red-600">{urlError}</p>}
+            {urlError && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <XCircle className="w-3 h-3" />
+                {urlError}
+              </p>
+            )}
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Label>Providers de Deploy</Label>
-            <div className="space-y-2">
-              {AVAILABLE_PROVIDERS.map((provider) => (
-                <div
-                  key={provider.id}
-                  className="flex items-center space-x-3 p-3 border rounded-lg"
-                >
-                  <Checkbox
-                    id={`provider-${provider.id}`}
-                    checked={selectedProviders.includes(provider.slug)}
-                    onCheckedChange={(checked) =>
-                      handleProviderChange(provider.slug, checked as boolean)
-                    }
-                    disabled={provider.status === 'down'}
-                  />
-                  <div className="flex-1 flex items-center justify-between">
-                    <Label
-                      htmlFor={`provider-${provider.id}`}
-                      className="flex-1 cursor-pointer"
-                    >
-                      {PROVIDER_NAMES[provider.slug]}
-                    </Label>
-                    <Badge
-                      variant="secondary"
-                      className={getProviderStatusColor(provider)}
-                    >
-                      {provider.status}
-                    </Badge>
-                  </div>
+            
+            {/* Available Providers */}
+            {availableProviders.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">Providers Disponíveis</p>
+                <div className="space-y-2">
+                  {availableProviders.map((provider) => {
+                    const config = providerStatusConfig[provider.status]
+                    const StatusIcon = config.icon
+                    
+                    return (
+                      <div
+                        key={provider.id}
+                        className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <Checkbox
+                          id={`provider-${provider.id}`}
+                          checked={selectedProviders.includes(provider.slug)}
+                          onCheckedChange={(checked) =>
+                            handleProviderChange(provider.slug, checked as boolean)
+                          }
+                        />
+                        <div className="flex-1 flex items-center justify-between">
+                          <Label
+                            htmlFor={`provider-${provider.id}`}
+                            className="flex-1 cursor-pointer font-medium"
+                          >
+                            {PROVIDER_NAMES[provider.slug]}
+                          </Label>
+                          <Badge
+                            variant="secondary"
+                            className={`${config.color} flex items-center gap-1`}
+                          >
+                            <StatusIcon className="w-3 h-3" />
+                            {config.label}
+                          </Badge>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
-              ))}
-              {selectedProviders.length === 0 && (
-                <p className="text-sm text-red-600">
-                  Selecione pelo menos um provider
-                </p>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* Unavailable Providers */}
+            {unavailableProviders.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">Providers Indisponíveis</p>
+                <div className="space-y-2">
+                  {unavailableProviders.map((provider) => {
+                    const config = providerStatusConfig[provider.status]
+                    const StatusIcon = config.icon
+                    
+                    return (
+                      <div
+                        key={provider.id}
+                        className="flex items-center space-x-3 p-3 border rounded-lg bg-gray-50 opacity-60"
+                      >
+                        <Checkbox
+                          id={`provider-${provider.id}`}
+                          disabled
+                          checked={false}
+                        />
+                        <div className="flex-1 flex items-center justify-between">
+                          <Label
+                            htmlFor={`provider-${provider.id}`}
+                            className="flex-1 cursor-not-allowed font-medium text-muted-foreground"
+                          >
+                            {PROVIDER_NAMES[provider.slug]}
+                          </Label>
+                          <Badge
+                            variant="secondary"
+                            className={`${config.color} flex items-center gap-1`}
+                          >
+                            <StatusIcon className="w-3 h-3" />
+                            {config.label}
+                          </Badge>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {selectedProviders.length === 0 && (
+              <p className="text-sm text-red-600 flex items-center gap-1">
+                <XCircle className="w-3 h-3" />
+                Selecione pelo menos um provider
+              </p>
+            )}
           </div>
 
           <DialogFooter>
@@ -185,8 +259,16 @@ export function NewDeployDialog({ children }: NewDeployDialogProps) {
                 selectedProviders.length === 0 ||
                 createMutation.isPending
               }
+              className="bg-blue-600 hover:bg-blue-700"
             >
-              {createMutation.isPending ? 'Criando...' : 'Criar Deployment'}
+              {createMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Criando...
+                </>
+              ) : (
+                'Criar Deployment'
+              )}
             </Button>
           </DialogFooter>
         </form>

@@ -6,14 +6,14 @@ import type { Log, LogFilters } from '../lib/types'
 export const logKeys = {
   all: ['logs'] as const,
   byDeploy: (deployId: number) => [...logKeys.all, 'deploy', deployId] as const,
-  byDeployFiltered: (deployId: number, filters: LogFilters) => 
+  byDeployFiltered: (deployId: number, filters: LogFilters) =>
     [...logKeys.byDeploy(deployId), 'filtered', filters] as const,
 }
 
 // Hook to get logs for a specific deployment
 export function useLogs(deployId: number, filters?: LogFilters) {
   return useQuery({
-    queryKey: filters 
+    queryKey: filters
       ? logKeys.byDeployFiltered(deployId, filters)
       : logKeys.byDeploy(deployId),
     queryFn: () => logService.getByDeployId(deployId, filters),
@@ -25,12 +25,12 @@ export function useLogs(deployId: number, filters?: LogFilters) {
 // Hook to get logs with real-time polling
 export function useLogsPolling(deployId: number, filters?: LogFilters) {
   return useQuery({
-    queryKey: filters 
+    queryKey: filters
       ? logKeys.byDeployFiltered(deployId, filters)
       : logKeys.byDeploy(deployId),
     queryFn: () => logService.getByDeployId(deployId, filters),
     staleTime: 0, // Always considered stale for real-time updates
-    refetchInterval: 2000, // Poll every 2 seconds for logs
+    refetchInterval: 1000, // Poll every 1 second for logs
     enabled: !!deployId,
   })
 }
@@ -58,17 +58,25 @@ export function useProviderLogsPolling(deployId: number, providerSlug: string) {
 // Hook to get latest logs (with automatic refresh)
 export function useLatestLogs(deployId: number, filters?: LogFilters) {
   const queryClient = useQueryClient()
-  
+
   const query = useQuery({
-    queryKey: filters 
+    queryKey: filters
       ? logKeys.byDeployFiltered(deployId, filters)
       : logKeys.byDeploy(deployId),
     queryFn: () => logService.getByDeployId(deployId, filters),
     staleTime: 10 * 1000, // 10 seconds
     refetchInterval: (query) => {
       // Check if deployment is still active by looking at related deployment cache
-      const deploymentData = queryClient.getQueryData(['deployments', 'detail', deployId])
-      if (deploymentData && typeof deploymentData === 'object' && 'status' in deploymentData) {
+      const deploymentData = queryClient.getQueryData([
+        'deployments',
+        'detail',
+        deployId,
+      ])
+      if (
+        deploymentData &&
+        typeof deploymentData === 'object' &&
+        'status' in deploymentData
+      ) {
         const status = (deploymentData as any).status
         if (status === 'pending' || status === 'in_progress') {
           return 3000 // Poll every 3 seconds for active deployments
@@ -87,16 +95,16 @@ export function useRefreshLogs() {
   const queryClient = useQueryClient()
 
   const refreshLogs = (deployId: number, filters?: LogFilters) => {
-    const queryKey = filters 
+    const queryKey = filters
       ? logKeys.byDeployFiltered(deployId, filters)
       : logKeys.byDeploy(deployId)
-    
+
     return queryClient.invalidateQueries({ queryKey })
   }
 
   const refreshAllLogs = (deployId: number) => {
-    return queryClient.invalidateQueries({ 
-      queryKey: logKeys.byDeploy(deployId) 
+    return queryClient.invalidateQueries({
+      queryKey: logKeys.byDeploy(deployId),
     })
   }
 
