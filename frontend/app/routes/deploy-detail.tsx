@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react'
 import {
   AlertCircle,
   AlertTriangle,
@@ -12,15 +13,19 @@ import {
   Terminal,
   XCircle,
   Zap,
+  Loader2,
+  Activity,
+  Sparkles,
 } from 'lucide-react'
-import { Link } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Label } from '~/components/ui/label'
-import { useDeploymentPolling, useLogsPolling } from '~/hooks'
+import { Progress } from '~/components/ui/progress'
 import { PROVIDER_NAMES } from '~/lib/constants/providers'
 import type { LogLevel, Provider } from '~/lib/types'
+import { useDeploymentPolling } from '~/hooks'
 import {
   formatDate,
   formatDateWithSeconds,
@@ -29,6 +34,7 @@ import {
   getRepoOwner,
 } from '~/lib/utils'
 import type { Route } from './+types/deploy-detail'
+import { useConfetti } from '~/hooks/useConfetti'
 
 export function meta({ params }: Route.MetaArgs) {
   return [
@@ -76,6 +82,11 @@ const providerStatusConfig = {
     icon: XCircle,
     label: 'Falhou',
   },
+  pending: {
+    color: 'bg-slate-100 text-slate-800 border-slate-200',
+    icon: Clock,
+    label: 'Aguardando',
+  },
 } as const
 
 const logLevelConfig = {
@@ -104,17 +115,14 @@ const logLevelConfig = {
     icon: Zap,
     bg: 'bg-red-100',
   },
+  success: {
+    color: 'text-green-600',
+    icon: CheckCircle,
+    bg: 'bg-green-50',
+  },
 } as const
 
-interface ProviderLogsProps {
-  provider: Provider
-  deployId: number
-}
-
-function ProviderLogs({ provider, deployId }: ProviderLogsProps) {
-  const { data: logs = [], isLoading } = useLogsPolling(deployId, {
-    provider: provider.slug,
-  })
+function ProviderLogs({ provider }: { provider: Provider }) {
   const config = providerStatusConfig[provider.status]
   const StatusIcon = config.icon
 
@@ -137,18 +145,13 @@ function ProviderLogs({ provider, deployId }: ProviderLogsProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-2 max-h-80 overflow-y-auto">
-          {isLoading && logs.length === 0 ? (
-            <div className="flex items-center justify-center py-8 text-muted-foreground">
-              <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-              Carregando logs...
-            </div>
-          ) : logs.length === 0 ? (
+          {provider.logs.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Terminal className="w-8 h-8 mx-auto mb-2 opacity-50" />
               <p>Nenhum log encontrado</p>
             </div>
           ) : (
-            logs.map((log) => {
+            provider.logs.map((log) => {
               const logConfig = logLevelConfig[log.level]
               const LogIcon = logConfig.icon
 
@@ -179,56 +182,28 @@ function ProviderLogs({ provider, deployId }: ProviderLogsProps) {
   )
 }
 
-export default function DeployDetail({ params }: Route.ComponentProps) {
-  const deployId = parseInt(params.id)
-  const {
-    data: deployment,
-    isLoading: loadingDeploy,
-    error,
-  } = useDeploymentPolling(deployId)
+export default function DeployDetail() {
+  const { id } = useParams();
+  const { data: deployment } = useDeploymentPolling(Number(id));
+  const deployStatus = deployment ? getDeployStatus(deployment) : 'pending';
+  const currentStatusConfig = statusConfig[deployStatus];
+  const StatusIcon = currentStatusConfig.icon;
+  const hasCompleted = deployment?.progress === 100;
 
-  if (error) {
+  // Adicionar o hook de confete
+  useConfetti(hasCompleted);
+
+  if (!deployment) {
     return (
       <div className="min-h-screen bg-background p-6">
-        <div className="mx-auto max-w-7xl">
-          <div className="text-center py-12">
-            <XCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
-            <h2 className="text-2xl font-bold text-red-600 mb-2">
-              Erro ao carregar deployment
-            </h2>
-            <p className="text-muted-foreground mb-4">
-              {error instanceof Error
-                ? error.message
-                : 'Deployment não encontrado'}
-            </p>
-            <Button asChild>
-              <Link to="/">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar ao Dashboard
-              </Link>
-            </Button>
+        <div className="mx-auto max-w-7xl space-y-6">
+          <div className="flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin" />
           </div>
         </div>
       </div>
-    )
+    );
   }
-
-  if (loadingDeploy || !deployment) {
-    return (
-      <div className="min-h-screen bg-background p-6">
-        <div className="mx-auto max-w-7xl">
-          <div className="text-center py-12">
-            <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground">Carregando deployment...</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const status = getDeployStatus(deployment)
-  const config = statusConfig[status]
-  const StatusIcon = config.icon
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -246,136 +221,108 @@ export default function DeployDetail({ params }: Route.ComponentProps) {
               <Github className="w-8 h-8 text-muted-foreground mt-1" />
               <div>
                 <h1 className="text-2xl font-bold flex items-center gap-2">
+                  {getRepoOwner(deployment.github_repo_url)} /
                   {getRepoName(deployment.github_repo_url)}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    asChild
-                  >
-                    <a
-                      href={deployment.github_repo_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </Button>
                 </h1>
-                <p className="text-muted-foreground">
-                  {getRepoOwner(deployment.github_repo_url)} • Deploy #
-                  {deployment.id}
+                <p className="text-muted-foreground text-sm flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  Deploy ID: {deployment.id} • Criado em:
+                  {formatDate(deployment.created_at)}
                 </p>
               </div>
             </div>
           </div>
           <Badge
-            variant="secondary"
-            className={`${config.color} flex items-center gap-2 px-3 py-1`}
+            variant="outline"
+            className={`${currentStatusConfig.color} flex items-center gap-1`}
           >
             <StatusIcon className="w-4 h-4" />
-            {config.label}
+            {currentStatusConfig.label}
           </Badge>
         </div>
 
-        {/* Deployment Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              Informações do Deployment
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground">
-                Status
-              </Label>
-              <div className="flex items-center gap-2 mt-1">
-                <StatusIcon className="w-4 h-4" />
-                <span className="text-lg font-semibold">{config.label}</span>
-              </div>
-            </div>
-            <div>
-              <Label className="text-sm font-medium text-muted-foreground">
-                Criado em
-              </Label>
-              <p className="text-sm mt-1">
-                {formatDate(deployment.created_at)}
-              </p>
-            </div>
-            {deployment.completed_at && (
-              <div>
-                <Label className="text-sm font-medium text-muted-foreground">
-                  Concluído em
-                </Label>
-                <p className="text-sm mt-1">
-                  {formatDate(deployment.completed_at)}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Provider Status Summary */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" />
-              Status dos Providers
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {deployment.providers.map((provider) => {
-                const providerConfig = providerStatusConfig[provider.status]
-                const ProviderIcon = providerConfig.icon
-
-                return (
-                  <div
-                    key={provider.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <ProviderIcon className="w-4 h-4" />
-                      <span className="font-medium">
-                        {PROVIDER_NAMES[provider.slug]}
-                      </span>
-                    </div>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Status Section */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Activity className="w-5 h-5" />
+                  Status Geral
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Progress value={deployment.progress} className="flex-1" />
+                  <span className="font-medium text-lg">
+                    {deployment.progress}%
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <Label>Status:</Label>
                     <Badge
                       variant="outline"
-                      className={`${providerConfig.color} text-xs`}
+                      className={`${currentStatusConfig.color} flex items-center gap-1 mt-1 w-fit`}
                     >
-                      {providerConfig.label}
+                      <StatusIcon className="w-3 h-3" />
+                      {currentStatusConfig.label}
                     </Badge>
                   </div>
-                )
-              })}
+                  <div>
+                    <Label>URL do Repositório:</Label>
+                    <a
+                      href={deployment.github_repo_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-blue-600 hover:underline mt-1"
+                    >
+                      {deployment.github_repo_url}
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  <div>
+                    <Label>Criado em:</Label>
+                    <p className="text-muted-foreground mt-1">
+                      {formatDateWithSeconds(deployment.created_at)}
+                    </p>
+                  </div>
+                  {deployment.updated_at && (
+                    <div>
+                      <Label>Última Atualização:</Label>
+                      <p className="text-muted-foreground mt-1">
+                        {formatDateWithSeconds(deployment.updated_at)}
+                      </p>
+                    </div>
+                  )}
+                  {deployment.completed_at && (
+                    <div>
+                      <Label>Concluído em:</Label>
+                      <p className="text-muted-foreground mt-1">
+                        {formatDateWithSeconds(deployment.completed_at)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Provider Statuses & Logs */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Terminal className="w-5 h-5" />
+                Logs dos Providers
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {deployment.providers.map((provider) => (
+                  <ProviderLogs key={provider.id} provider={provider} />
+                ))}
+              </div>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Logs Grid - Each provider gets its own section */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Terminal className="w-5 h-5" />
-            <h2 className="text-xl font-semibold">Logs de Deployment</h2>
-            <Badge variant="outline" className="text-xs">
-              Atualização automática • 1s
-            </Badge>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {deployment.providers.map((provider) => (
-              <ProviderLogs
-                key={provider.id}
-                provider={provider}
-                deployId={deployId}
-              />
-            ))}
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

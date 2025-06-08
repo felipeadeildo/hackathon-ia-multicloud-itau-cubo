@@ -1,0 +1,144 @@
+{
+    "providers": [
+      {
+        "name": "AWS",
+        "regions": [
+          {
+            "name": "us-east-1",
+            "location": "N. Virginia",
+            "latency": {
+              "brasil": 140,
+              "europa": 80,
+              "asia": 180
+            },
+            "pricing": {
+              "compute": {
+                "t3.micro": 0.0104,
+                "t3.small": 0.0208,
+                "t3.medium": 0.0416
+              },
+              "storage": {
+                "ebs_gp3": 0.08,
+                "s3_standard": 0.023
+              }
+            },
+            "services": [
+              "EC2",
+              "Lambda",
+              "RDS",
+              "S3",
+              "CloudFront"
+            ]
+          },
+          {
+            "name": "sa-east-1",
+            "location": "São Paulo",
+            "latency": {
+              "brasil": 15,
+              "europa": 180,
+              "asia": 220
+            },
+            "pricing": {
+              "compute": {
+                "t3.micro": 0.0116,
+                "t3.small": 0.0232,
+                "t3.medium": 0.0464
+              },
+              "storage": {
+                "ebs_gp3": 0.096,
+                "s3_standard": 0.0405
+              }
+            },
+            "services": [
+              "EC2",
+              "Lambda",
+              "RDS",
+              "S3"
+            ]
+          }
+        ],
+        "pros": [
+          "Maior variedade de serviços",
+          "Documentação extensa",
+          "Comunidade ativa"
+        ],
+        "cons": [
+          "Complexidade alta",
+          "Custos podem escalar rapidamente"
+        ]
+      },
+      {
+        "name": "Oracle Cloud",
+        "regions": [
+          {
+            "name": "sa-saopaulo-1",
+            "location": "São Paulo",
+            "latency": {
+              "brasil": 12,
+              "europa": 185,
+              "asia": 210
+            },
+            "pricing": {
+              "compute": {
+                "vm.standard.e3.flex": 0.0085,
+                "vm.standard.e4.flex": 0.0068
+              },
+              "storage": {
+                "block_storage": 0.0425,
+                "object_storage": 0.0255
+              }
+            },
+            "services": [
+              "Compute",
+              "Functions",
+              "Database",
+              "Object Storage",
+              "Load Balancer"
+            ]
+          },
+          {
+            "name": "us-ashburn-1",
+            "location": "Ashburn",
+            "latency": {
+              "brasil": 135,
+              "europa": 85,
+              "asia": 175
+            },
+            "pricing": {
+              "compute": {
+                "vm.standard.e3.flex": 0.0068,
+                "vm.standard.e4.flex": 0.0051
+              },
+              "storage": {
+                "block_storage": 0.0340,
+                "object_storage": 0.0204
+              }
+            },
+            "services": [
+              "Compute",
+              "Functions",
+              "Database",
+              "Object Storage",
+              "CDN"
+            ]
+          }
+        ],
+        "pros": [
+          "Preços competitivos",
+          "Always Free Tier generoso",
+          "Boa performance de banco de dados"
+        ],
+        "cons": [
+          "Menor variedade de serviços",
+          "Comunidade menor"
+        ]
+      }
+    ],
+    "comparison_factors": {
+      "latency_weight": 0.3,
+      "cost_weight": 0.4,
+      "services_weight": 0.2,
+      "reliability_weight": 0.1
+    },
+    "last_updated": "2025-06-08"
+  }

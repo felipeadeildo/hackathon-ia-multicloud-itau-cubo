@@ -1,5 +1,5 @@
 // Provider types - matching Django model choices exactly
-export type ProviderStatus = "in_progress" | "up" | "down";
+export type ProviderStatus = "pending" | "in_progress" | "up" | "down";
 
 export interface Provider {
   id: number;
@@ -7,16 +7,19 @@ export interface Provider {
   status: ProviderStatus;
   created_at: string;
   updated_at: string;
+  logs: Log[];
 }
 
 // Deploy types - matching API exactly
 export interface Deploy {
   id: number;
   github_repo_url: string;
-  providers: Provider[];
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
   created_at: string;
   updated_at: string;
-  completed_at: string | null;
+  completed_at?: string;
+  providers: Provider[];
+  progress: number;
 }
 
 // Helper type for computed deploy status
@@ -28,7 +31,7 @@ export interface DeployCreateRequest {
 }
 
 // Log types - matching Django model choices exactly
-export type LogLevel = "debug" | "info" | "warning" | "error" | "critical";
+export type LogLevel = 'debug' | 'info' | 'warning' | 'error' | 'critical' | 'success';
 
 export interface Log {
   id: number;

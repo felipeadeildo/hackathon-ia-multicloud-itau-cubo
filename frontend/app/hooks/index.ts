@@ -9,3 +9,6 @@ export {
 export {
   logKeys, useErrorLogs, useLatestLogs, useLogs, useLogsByLevel, useLogsByProvider, useLogsPolling, useProviderLogsPolling, useRefreshLogs
 } from './useLogs'
+
+// AI hooks
+export { useAIRecommendation } from './useAIRecommendation'

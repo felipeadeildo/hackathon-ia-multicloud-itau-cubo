@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle, Github, Loader2, XCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, Github, Loader2, XCircle, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -38,6 +38,56 @@ const providerStatusConfig = {
     label: 'Processando',
   },
 } as const
+
+// Componente de simulação de IA
+export function AIRecommendationSimulation() {
+  const mockRecommendations = {
+    aws: {
+      latency: "45ms",
+      availability: "99.99%",
+      region: "São Paulo (sa-east-1)",
+      recommendation: "Ideal para aplicações que exigem alta disponibilidade e baixa latência na América do Sul"
+    },
+    oracle: {
+      latency: "52ms",
+      availability: "99.95%",
+      region: "São Paulo (sa-saopaulo-1)",
+      recommendation: "Excelente para workloads corporativos com requisitos de segurança avançados"
+    }
+  }
+
+  return (
+    <div className="mt-4 p-4 border rounded-lg bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className="flex items-center gap-2 mb-3">
+        <Sparkles className="w-5 h-5 text-blue-600" />
+        <h3 className="font-semibold text-blue-900">Recomendações da IA</h3>
+      </div>
+      
+      <div className="space-y-4">
+        {Object.entries(mockRecommendations).map(([provider, metrics]) => (
+          <div key={provider} className="bg-white p-3 rounded-lg shadow-sm">
+            <h4 className="font-medium text-blue-800 mb-2 capitalize">{provider}</h4>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <span className="text-gray-600">Latência:</span>
+                <span className="ml-1 font-medium">{metrics.latency}</span>
+              </div>
+              <div>
+                <span className="text-gray-600">Disponibilidade:</span>
+                <span className="ml-1 font-medium">{metrics.availability}</span>
+              </div>
+              <div className="col-span-2">
+                <span className="text-gray-600">Região:</span>
+                <span className="ml-1 font-medium">{metrics.region}</span>
+              </div>
+            </div>
+            <p className="mt-2 text-sm text-blue-700">{metrics.recommendation}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export function NewDeployDialog({ children }: NewDeployDialogProps) {
   const [open, setOpen] = useState(false)
@@ -243,6 +293,9 @@ export function NewDeployDialog({ children }: NewDeployDialogProps) {
               </p>
             )}
           </div>
+
+          {/* Adicionando a simulação de IA */}
+          <AIRecommendationSimulation />
 
           <DialogFooter>
             <Button
