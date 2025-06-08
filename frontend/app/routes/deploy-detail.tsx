@@ -211,12 +211,15 @@ export default function DeployDetail({ params }: Route.ComponentProps) {
                 <Label htmlFor="provider-filter" className="text-sm">
                   Filtrar por Provider
                 </Label>
-                <Select value={selectedProvider} onValueChange={setSelectedProvider}>
+                <Select 
+                  value={selectedProvider || 'all-providers'} 
+                  onValueChange={(value) => setSelectedProvider(value === 'all-providers' ? '' : value)}
+                >
                   <SelectTrigger id="provider-filter">
                     <SelectValue placeholder="Todos os providers" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos os providers</SelectItem>
+                    <SelectItem value="all-providers">Todos os providers</SelectItem>
                     {AVAILABLE_PROVIDERS.map((provider) => (
                       <SelectItem key={provider.id} value={provider.slug}>
                         {provider.name}
@@ -229,12 +232,15 @@ export default function DeployDetail({ params }: Route.ComponentProps) {
                 <Label htmlFor="level-filter" className="text-sm">
                   Filtrar por Nível
                 </Label>
-                <Select value={selectedLevel} onValueChange={(value) => setSelectedLevel(value as LogLevel | '')}>
+                <Select 
+                  value={selectedLevel || 'all-levels'} 
+                  onValueChange={(value) => setSelectedLevel(value === 'all-levels' ? '' : value as LogLevel)}
+                >
                   <SelectTrigger id="level-filter">
                     <SelectValue placeholder="Todos os níveis" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos os níveis</SelectItem>
+                    <SelectItem value="all-levels">Todos os níveis</SelectItem>
                     <SelectItem value="debug">Debug</SelectItem>
                     <SelectItem value="info">Info</SelectItem>
                     <SelectItem value="warning">Warning</SelectItem>
