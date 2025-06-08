@@ -4,6 +4,13 @@ from pydantic_ai import Agent
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.conf import settings
+import json
+import os
+import logging
 
 from .serializers import (
     DeployCreateSerializer,
@@ -12,9 +19,24 @@ from .serializers import (
     ProviderSerializer,
 )
 
+# Configurar logging
+logger = logging.getLogger(__name__)
+
 agent = Agent(
     model="openai:gpt-4o-mini",
-    instructions="Você é um agente de deploy que sabe bastante coisa sobre eficiência de deploys",
+    instructions="""
+    Você é um especialista em infraestrutura cloud que analisa deployments e recomenda 
+    o melhor provedor baseado em dados técnicos e requisitos específicos.
+    
+    Considere sempre:
+    - Latência para a região do usuário
+    - Custo-benefício
+    - Recursos necessários vs disponíveis
+    - Complexidade de deployment
+    - Confiabilidade e SLA
+    
+    Forneça uma resposta estruturada com justificativa clara.
+    """,
 )
 
 
@@ -81,6 +103,50 @@ class DeploymentAIView(APIView):
         deploy = get_object_or_404(Deploy, pk=deploy_id)
         serializer = DeploySerializer(deploy)
 
-        prompt = f"Me diga qual provider usar para deployar o repo {deploy.github_repo_url} dado {serializer.data}"
+        # Carrega dados das clouds do arquivo JSON
+        cloud_data = self.load_cloud_data()
+        
+        # Monta o prompt com os dados das clouds
+        prompt = f"""
+        Me diga qual provider usar para deployar o repo {deploy.github_repo_url} 
+        dado os seguintes dados do deploy: {serializer.data}
+        
+        E considerando as seguintes informações das clouds disponíveis:
+        {json.dumps(cloud_data, indent=2, ensure_ascii=False)}
+        
+        Leve em consideração fatores como latência, custo, recursos disponíveis e localização.
+        """
+        
         result = agent.run_sync(prompt)
-        return Response({"result": result.output})
+        return Response({
+            "result": result.output,
+            "cloud_data_used": cloud_data
+        })
+    
+    def load_cloud_data(self):
+        """Carrega dados das clouds do arquivo JSON"""
+        try:
+            # Caminho para o arquivo JSON (ajuste conforme sua estrutura)
+            json_file_path = os.path.join(settings.BASE_DIR, 'data', 'cloud_providers.json')
+            
+            with open(json_file_path, 'r', encoding='utf-8') as file:
+                cloud_data = json.load(file)
+            
+            return cloud_data
+            
+        except FileNotFoundError:
+            # Fallback caso o arquivo não exista
+            return {
+                "error": "Arquivo de dados das clouds não encontrado",
+                "providers": []
+            }
+        except json.JSONDecodeError:
+            return {
+                "error": "Erro, vai na view.py do back",
+                "providers": []
+            }
+        except Exception as e:
+            return {
+                "error": f"Erro inesperado: {str(e)}",
+                "providers": []
+            }

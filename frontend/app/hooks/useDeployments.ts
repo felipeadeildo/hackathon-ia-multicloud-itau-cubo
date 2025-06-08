@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { deploymentService } from '../lib/services'
+import { deploymentService } from '../lib/services/deployments'
 import type { Deploy, DeployCreateRequest } from '../lib/types'
+import { useNavigate } from 'react-router'
 
 // Query keys for cache management
 export const deploymentKeys = {
@@ -62,6 +63,7 @@ export function useDeploymentPolling(id: number) {
 // Hook to create a new deployment
 export function useCreateDeployment() {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   return useMutation({
     mutationFn: (data: DeployCreateRequest) => deploymentService.create(data),
@@ -74,6 +76,9 @@ export function useCreateDeployment() {
         deploymentKeys.detail(newDeployment.id),
         newDeployment
       )
+
+      // Navigate to the new deployment's detail page
+      navigate(`/deploy/${newDeployment.id}`)
     },
   })
 }
