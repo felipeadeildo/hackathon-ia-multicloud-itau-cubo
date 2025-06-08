@@ -43,7 +43,20 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "deployments",
     "rest_framework",
+    "drf_spectacular",
 ]
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "MultiCloud Hackathon API",
+    "DESCRIPTION": "API para o MultiCloud Hackathon",
+    "VERSION": "1.0.0",
+    # outras opções: OAS_VERSION, COMPONENT_SPLIT_REQUEST, etc.
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
