@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "react-router build && mkdir -p ./dist && mv -r ./build/client/* ./dist && ls && echo \"chegou aqui\"",
+    "build": "react-router build && mkdir -p ./dist && cp -r ./build/client/* ./dist && ls && echo \"chegou aqui\"",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
