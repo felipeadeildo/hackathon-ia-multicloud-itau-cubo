@@ -21,6 +21,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "boto3" },
     { name = "django" },
+    { name = "djangorestframework" },
     { name = "oci" },
     { name = "python-dotenv" },
 ]
@@ -29,6 +30,7 @@ dependencies = [
 requires-dist = [
     { name = "boto3", specifier = ">=1.38.32" },
     { name = "django", specifier = ">=5.2.2" },
+    { name = "djangorestframework", specifier = ">=3.16.0" },
     { name = "oci", specifier = ">=2.154.0" },
     { name = "python-dotenv", specifier = ">=1.1.0" },
 ]
@@ -195,6 +197,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/39/17/4567ee12bb84114c544d5c4a792e7226db517ac78f552111e9dc62d1de14/django-5.2.2.tar.gz", hash = "sha256:85852e517f84435e9b13421379cd6c43ef5b48a9c8b391d29a26f7900967e952", size = 10827542 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b4/5c/5d00acab6c062b154e5a0f092938ae5a0c698dbc4362b68e23200960f32c/django-5.2.2-py3-none-any.whl", hash = "sha256:997ef2162d04ead6869551b22cde4e06da1f94cf595f4af3f3d3afeae1f3f6fe", size = 8302562 },
+]
+
+[[package]]
+name = "djangorestframework"
+version = "3.16.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7d/97/112c5a72e6917949b6d8a18ad6c6e72c46da4290c8f36ee5f1c1dcbc9901/djangorestframework-3.16.0.tar.gz", hash = "sha256:f022ff46613584de994c0c6a4aebbace5fd700555fbe9d33b865ebf173eba6c9", size = 1068408 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/eb/3e/2448e93f4f87fc9a9f35e73e3c05669e0edd0c2526834686e949bb1fd303/djangorestframework-3.16.0-py3-none-any.whl", hash = "sha256:bea7e9f6b96a8584c5224bfb2e4348dfb3f8b5e34edbecb98da258e892089361", size = 1067305 },
 ]
 
 [[package]]
