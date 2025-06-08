@@ -1,5 +1,6 @@
 from deployments.models import Deploy, Log, Provider
 from django.shortcuts import get_object_or_404
+from pydantic_ai import Agent
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,6 +10,11 @@ from .serializers import (
     DeploySerializer,
     LogSerializer,
     ProviderSerializer,
+)
+
+agent = Agent(
+    model="openai:gpt-4o-mini",
+    instructions="Você é um agente de deploy que sabe bastante coisa sobre eficiência de deploys, e bla bla bla",
 )
 
 
@@ -68,3 +74,13 @@ class ProviderListView(APIView):
             providers = Provider.objects.all()
         serializer = ProviderSerializer(providers, many=True)
         return Response(serializer.data)
+
+
+class DeploymentAIView(APIView):
+    def get(self, request, deploy_id):
+        deploy = get_object_or_404(Deploy, pk=deploy_id)
+        serializer = DeploySerializer(deploy)
+
+        prompt = f"Me diga qual provider usar para deployar o repo {deploy.github_repo_url} dado {serializer.data}"
+        result = agent.run_sync(prompt)
+        return Response({"result": result.output})

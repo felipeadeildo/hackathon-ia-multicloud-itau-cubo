@@ -12,5 +12,6 @@ dependencies = [
     "djangorestframework>=3.16.0",
     "drf-spectacular>=0.28.0",
     "oci>=2.154.0",
+    "pydantic-ai-slim[openai]>=0.2.15",
     "python-dotenv>=1.1.0",
 ]
