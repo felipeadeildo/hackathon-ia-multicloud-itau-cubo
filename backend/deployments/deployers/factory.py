@@ -1,6 +1,5 @@
 from .aws import AWSDeployer
-
-# from .oracle import OracleDeployer
+from .oracle import OracleDeployer
 
 
 class DeployerFactory:
@@ -8,8 +7,7 @@ class DeployerFactory:
     def create_deployer(provider_type: str, deploy):
         deployers = {
             "aws": AWSDeployer,
-            # "oracle": OracleDeployer,
-            # Add more providers here
+            "oracle": OracleDeployer,
         }
         deployer_class = deployers.get(provider_type)
         if not deployer_class:

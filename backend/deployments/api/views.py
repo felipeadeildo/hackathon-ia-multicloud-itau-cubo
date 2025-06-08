@@ -27,7 +27,13 @@ class DeployListCreateView(APIView):
             providers = Provider.objects.filter(slug__in=provider_slugs)
             deploy.providers.set(providers)
             deploy.save()
-            # TODO: disparar a task assíncrona de deploy
+
+            # Dispara tasks assíncronas para cada provider
+            from deployments.tasks import deploy_to_provider_task
+
+            for provider_slug in provider_slugs:
+                deploy_to_provider_task.delay(deploy.pk, provider_slug)  # type: ignore
+
             return Response(
                 DeploySerializer(deploy).data, status=status.HTTP_201_CREATED
             )
